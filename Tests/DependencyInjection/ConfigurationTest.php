@@ -18,9 +18,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 {
     public function testOptions()
     {
-        $processor = new Processor();
-
-        $config = $processor->processConfiguration(new Configuration(), array());
+        $config = $this->process(array());
 
         $this->assertTrue($config['options']['html5_validate']);
         $this->assertNull($config['options']['pager_links']);
@@ -32,9 +30,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('Symfony\Component\Config\Definition\Exception\InvalidTypeException');
 
-        $processor = new Processor();
-
-        $config = $processor->processConfiguration(new Configuration(), array(array(
+        $config = $this->process(array(array(
             'options' => array(
                 'html5_validate' => '1',
             ),
@@ -43,9 +39,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testCustomTemplatesPerAdmin()
     {
-        $processor = new Processor();
-
-        $config = $processor->processConfiguration(new Configuration(), array(array(
+        $config = $this->process(array(array(
             'admin_services' => array(
                 'my_admin_id' => array(
                     'templates' => array(
@@ -62,9 +56,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testAdminServicesDefault()
     {
-        $processor = new Processor();
-
-        $config = $processor->processConfiguration(new Configuration(), array(array(
+        $config = $this->process(array(array(
             'admin_services' => array('my_admin_id' => array()),
         )));
 
@@ -94,16 +86,14 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testDashboardWithoutRoles()
     {
-        $processor = new Processor();
-        $config = $processor->processConfiguration(new Configuration(), array());
+        $config = $this->process(array());
 
         $this->assertEmpty($config['dashboard']['blocks'][0]['roles']);
     }
 
     public function testDashboardWithRoles()
     {
-        $processor = new Processor();
-        $config = $processor->processConfiguration(new Configuration(), array(array(
+        $config = $this->process(array(array(
             'dashboard' => array(
                 'blocks' => array(array(
                     'roles' => array('ROLE_ADMIN'),
@@ -117,8 +107,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testDashboardGroups()
     {
-        $processor = new Processor();
-        $config = $processor->processConfiguration(new Configuration(), array(array(
+        $config = $this->process(array(array(
             'dashboard' => array(
                 'groups' => array(
                     'bar' => array(
@@ -128,9 +117,10 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                             'item1',
                             'item2',
                             array(
-                                'label'        => 'fooLabel',
-                                'route'        => 'fooRoute',
-                                'route_params' => array('bar' => 'foo'),
+                                'label'          => 'fooLabel',
+                                'route'          => 'fooRoute',
+                                'route_params'   => array('bar' => 'foo'),
+                                'route_absolute' => true,
                             ),
                             array(
                                 'label' => 'barLabel',
@@ -146,37 +136,41 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(
             $config['dashboard']['groups']['bar']['items'][0],
             array(
-                'admin'        => 'item1',
-                'label'        => '',
-                'route'        => '',
-                'route_params' => array(),
+                'admin'          => 'item1',
+                'label'          => '',
+                'route'          => '',
+                'route_params'   => array(),
+                'route_absolute' => true,
             )
         );
         $this->assertSame(
             $config['dashboard']['groups']['bar']['items'][1],
             array(
-                'admin'        => 'item2',
-                'label'        => '',
-                'route'        => '',
-                'route_params' => array(),
+                'admin'          => 'item2',
+                'label'          => '',
+                'route'          => '',
+                'route_params'   => array(),
+                'route_absolute' => true,
             )
         );
         $this->assertSame(
             $config['dashboard']['groups']['bar']['items'][2],
             array(
-                'label'        => 'fooLabel',
-                'route'        => 'fooRoute',
-                'route_params' => array('bar' => 'foo'),
-                'admin'        => '',
+                'label'          => 'fooLabel',
+                'route'          => 'fooRoute',
+                'route_params'   => array('bar' => 'foo'),
+                'route_absolute' => true,
+                'admin'          => '',
             )
         );
         $this->assertSame(
             $config['dashboard']['groups']['bar']['items'][3],
             array(
-                'label'        => 'barLabel',
-                'route'        => 'barRoute',
-                'route_params' => array(),
-                'admin'        => '',
+                'label'          => 'barLabel',
+                'route'          => 'barRoute',
+                'route_params'   => array(),
+                'admin'          => '',
+                'route_absolute' => true,
             )
         );
     }
@@ -185,8 +179,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('\InvalidArgumentException', 'Expected either parameters "route" and "label" for array items');
 
-        $processor = new Processor();
-        $config = $processor->processConfiguration(new Configuration(), array(array(
+        $config = $this->process(array(array(
             'dashboard' => array(
                 'groups' => array(
                     'bar' => array(
@@ -203,5 +196,19 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                 ),
             ),
         )));
+    }
+
+    /**
+     * Processes an array of configurations and returns a compiled version.
+     *
+     * @param array $configs An array of raw configurations
+     *
+     * @return array A normalized array
+     */
+    protected function process($configs)
+    {
+        $processor = new Processor();
+
+        return $processor->processConfiguration(new Configuration(), $configs);
     }
 }

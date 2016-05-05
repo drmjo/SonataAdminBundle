@@ -308,6 +308,23 @@ interface AdminInterface
     public function hasRoute($name);
 
     /**
+     * Check the current request is given route or not.
+     *
+     * TODO: uncomment this method before releasing 4.0
+     *
+     * ```
+     * $this->isCurrentRoute('create'); // is create page?
+     * $this->isCurrentRoute('edit', 'some.admin.code'); // is some.admin.code admin's edit page?
+     * ```
+     *
+     * @param string $name
+     * @param string $adminCode
+     *
+     * @return bool
+     */
+    // public function isCurrentRoute($name, $adminCode = null);
+
+    /**
      * Returns true if the admin has a FieldDescription with the given $name.
      *
      * @param string $name
@@ -413,11 +430,15 @@ interface AdminInterface
 
     /**
      * @param mixed $entity
+     *
+     * @return string a string representation of the id that is save to use in an url
      */
     public function getUrlsafeIdentifier($entity);
 
     /**
      * @param mixed $entity
+     *
+     * @return string a string representation of the identifiers for this instance
      */
     public function getNormalizedIdentifier($entity);
 
@@ -562,8 +583,6 @@ interface AdminInterface
 
     /**
      * @param string $uniqId
-     *
-     * @return mixed
      */
     public function setUniqid($uniqId);
 
@@ -583,8 +602,6 @@ interface AdminInterface
 
     /**
      * @param object $subject
-     *
-     * @return mixed
      */
     public function setSubject($subject);
 
@@ -632,8 +649,6 @@ interface AdminInterface
      */
     public function getDataSourceIterator();
 
-    /**
-     */
     public function configure();
 
     /**
@@ -652,50 +667,42 @@ interface AdminInterface
 
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function delete($object);
 
+//TODO: uncomment this method for 4.0
+//    /**
+//     * @param mixed $object
+//     */
+//    public function preValidate($object);
+
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function preUpdate($object);
 
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function postUpdate($object);
 
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function prePersist($object);
 
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function postPersist($object);
 
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function preRemove($object);
 
     /**
      * @param mixed $object
-     *
-     * @return mixed
      */
     public function postRemove($object);
 
@@ -1023,4 +1030,24 @@ interface AdminInterface
      * @param object $object
      */
     public function checkAccess($action, $object = null);
+
+    /*
+     * Configure buttons for an action
+     *
+     * @param string $action
+     * @param object $object
+     *
+     */
+    // public function configureActionButtons($action, $object = null);
+
+//    TODO: uncomment this method for next major release
+//    /**
+//     * Hook to handle access authorization, without throw Exception
+//     *
+//     * @param string $action
+//     * @param object $object
+//     *
+//     * @return bool
+//     */
+//    public function hasAccess($action, $object = null);
 }

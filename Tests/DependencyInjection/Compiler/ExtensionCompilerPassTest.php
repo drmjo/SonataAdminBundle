@@ -350,6 +350,9 @@ class ExtensionCompilerPassTest extends \PHPUnit_Framework_TestCase
             ->register('router')
             ->setClass('Symfony\Component\Routing\RouterInterface');
         $container
+            ->register('property_accessor')
+            ->setClass('Symfony\Component\PropertyAccess\PropertyAccessor');
+        $container
             ->register('form.factory')
             ->setClass('Symfony\Component\Form\FormFactoryInterface');
         $container
@@ -358,6 +361,9 @@ class ExtensionCompilerPassTest extends \PHPUnit_Framework_TestCase
         $container
             ->register('knp_menu.factory')
             ->setClass('Knp\Menu\FactoryInterface');
+        $container
+            ->register('knp_menu.matcher')
+            ->setClass('Knp\Menu\Matcher\MatcherInterface');
         $container
             ->register('knp_menu.menu_provider')
             ->setClass('Knp\Menu\Provider\MenuProviderInterface');

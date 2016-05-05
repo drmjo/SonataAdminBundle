@@ -17,6 +17,7 @@ use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
 use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
 use Symfony\Component\Form\Exception\RuntimeException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\PropertyAccess\PropertyPath;
 
 /**
@@ -42,18 +43,27 @@ class ModelChoiceLoader implements ChoiceLoaderInterface
 
     private $choices;
 
+    /**
+     * @var PropertyPath
+     */
     private $propertyPath;
+
+    /**
+     * @var PropertyAccessorInterface
+     */
+    private $propertyAccessor;
 
     private $choiceList;
 
     /**
-     * @param ModelManagerInterface $modelManager
-     * @param string                $class
-     * @param null                  $property
-     * @param null                  $query
-     * @param array                 $choices
+     * @param ModelManagerInterface          $modelManager
+     * @param string                         $class
+     * @param null                           $property
+     * @param null                           $query
+     * @param array                          $choices
+     * @param PropertyAccessorInterface|null $propertyAccessor
      */
-    public function __construct(ModelManagerInterface $modelManager, $class, $property = null, $query = null, $choices = array())
+    public function __construct(ModelManagerInterface $modelManager, $class, $property = null, $query = null, $choices = array(), PropertyAccessorInterface $propertyAccessor = null)
     {
         $this->modelManager = $modelManager;
         $this->class = $class;
@@ -61,13 +71,13 @@ class ModelChoiceLoader implements ChoiceLoaderInterface
         $this->query = $query;
         $this->choices = $choices;
 
-        $this->identifier     = $this->modelManager->getIdentifierFieldNames($this->class);
+        $this->identifier = $this->modelManager->getIdentifierFieldNames($this->class);
 
         // The property option defines, which property (path) is used for
         // displaying entities as strings
         if ($property) {
             $this->propertyPath = new PropertyPath($property);
-            $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+            $this->propertyAccessor = $propertyAccessor ?: PropertyAccess::createPropertyAccessor();
         }
     }
 
@@ -79,7 +89,7 @@ class ModelChoiceLoader implements ChoiceLoaderInterface
         if (!$this->choiceList) {
             if ($this->query) {
                 $entities = $this->modelManager->executeQuery($this->query);
-            } elseif (is_array($this->choices)) {
+            } elseif (is_array($this->choices) && count($this->choices) > 0) {
                 $entities = $this->choices;
             } else {
                 $entities = $this->modelManager->findBy($this->class);
@@ -89,20 +99,19 @@ class ModelChoiceLoader implements ChoiceLoaderInterface
             foreach ($entities as $key => $entity) {
                 if ($this->propertyPath) {
                     // If the property option was given, use it
-                    $propertyAccessor = PropertyAccess::createPropertyAccessor();
-                    $valueObject = $propertyAccessor->getValue($entity, $this->propertyPath);
+                    $valueObject = $this->propertyAccessor->getValue($entity, $this->propertyPath);
                 } else {
                     // Otherwise expect a __toString() method in the entity
                     try {
                         $valueObject = (string) $entity;
                     } catch (\Exception $e) {
-                        throw new RuntimeException(sprintf("Unable to convert the entity %s to String, entity must have a '__toString()' method defined", ClassUtils::getClass($entity)), 0, $e);
+                        throw new RuntimeException(sprintf('Unable to convert the entity "%s" to string, provide "property" option or implement "__toString()" method in your entity.', ClassUtils::getClass($entity)), 0, $e);
                     }
                 }
 
                 $id = implode('~', $this->getIdentifierValues($entity));
 
-                if (!array_keys($choices, $valueObject)) {
+                if (!array_key_exists($valueObject, $choices)) {
                     $choices[$valueObject] = array();
                 }
 

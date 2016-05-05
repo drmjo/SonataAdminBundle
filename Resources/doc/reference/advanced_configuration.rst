@@ -103,8 +103,8 @@ You have 2 ways of defining the dependencies inside ``services.xml``:
                 - AppBundle\Entity\Project
                 - ~
             calls:
-                - [ setLabelTranslatorStrategy, [ @sonata.admin.label.strategy.native ]]
-                - [ setRouteBuilder, [ @sonata.admin.route.path_info ]]
+                - [ setLabelTranslatorStrategy, [ "@sonata.admin.label.strategy.native" ]]
+                - [ setRouteBuilder, [ "@sonata.admin.route.path_info" ]]
 
 If you want to modify the service that is going to be injected, add the following code to your
 application's config file:
@@ -119,6 +119,7 @@ application's config file:
                 sonata.order.admin.order:   # id of the admin service this setting is for
                     model_manager:          # dependency name, from the table above
                         sonata.order.admin.order.manager  # customised service id
+
 
 Creating a custom RouteBuilder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -176,7 +177,7 @@ To create your own RouteBuilder create the PHP class and register it as a servic
             app.admin.entity_route_builder:
                 class: AppBundle\Route\EntityRouterBuilder
                 arguments:
-                    - @sonata.admin.audit.manager
+                    - "@sonata.admin.audit.manager"
 
 Inherited classes
 -----------------
@@ -231,7 +232,7 @@ Tab Menu
 ACL
 ^^^
 
-Though the route linked my a menu may be protected the Tab Menu will not automatically check the ACl for you.
+Though the route linked by a menu may be protected the Tab Menu will not automatically check the ACl for you.
 The link will still appear unless you manually check it using the `isGranted` method:
 
 .. code-block:: php
@@ -281,6 +282,74 @@ If you want to use the Tab Menu in a different way, you can replace the Menu Tem
         sonata_admin:
             templates:
                 tab_menu_template:  AppBundle:Admin:own_tab_menu_template.html.twig
+
+Translations
+^^^^^^^^^^^^
+
+The translation parameters and domain can be customised by using the
+``translation_domain`` and ``translation_parameters`` keys of the extra array
+of data associated with the item, respectively.
+
+.. code-block:: php
+
+    <?php
+    $menuItem->setExtras(array(
+        'translation_parameters' => array('myparam' => 'myvalue'),
+        'translation_domain' => 'My domain',
+    ));
+
+You can also set the translation domain on the menu root, and children will
+inherit it :
+
+.. code-block:: php
+
+    <?php
+    $menu->setExtra('translation_domain', 'My domain');
+
+Filter parameters
+^^^^^^^^^^^^^^^^^
+
+You can add or override filter parameters to the Tab Menu:
+
+.. code-block:: php
+
+    <?php
+
+    use Knp\Menu\ItemInterface as MenuItemInterface;
+    use Sonata\AdminBundle\Admin\Admin;
+    use Sonata\AdminBundle\Admin\AdminInterface;
+    use Sonata\CoreBundle\Form\Type\EqualType;
+
+    class DeliveryAdmin extends Admin
+    {
+        protected function configureTabMenu(MenuItemInterface $menu, $action, AdminInterface $childAdmin = null)
+        {
+            if (!$childAdmin && !in_array($action, array('edit', 'show', 'list'))) {
+                return;
+            }
+
+            if ($action == 'list') {
+                // Get current filter parameters
+                $filterParameters = $this->getFilterParameters();
+
+                // Add or override filter parameters
+                $filterParameters['status'] = array(
+                    'type'  => EqualType::TYPE_IS_EQUAL, // => 1
+                    'value' => Delivery::STATUS_OPEN,
+                );
+
+                // Add filters to uri of tab
+                $menu->addChild('List open deliveries', array('uri' => $this->generateUrl('list', array(
+                    'filter' => $filterParameters,
+                ))));
+
+                return;
+            }
+        }
+    }
+
+The `Delivery` class is based on the `sonata_type_translatable_choice` example inside the Core's documentation:
+http://sonata-project.org/bundles/core/master/doc/reference/form_types.html#sonata-type-translatable-choice
 
 Disable content stretching
 --------------------------

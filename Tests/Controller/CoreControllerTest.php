@@ -14,7 +14,7 @@ namespace Sonata\AdminBundle\Tests\Controller;
 use Sonata\AdminBundle\Admin\Pool;
 use Sonata\AdminBundle\Controller\CoreController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CoreControllerTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,8 +31,8 @@ class CoreControllerTest extends \PHPUnit_Framework_TestCase
         $request = new Request();
 
         $requestStack = null;
-        if (Kernel::MINOR_VERSION > 3) {
-            $requestStack = new \Symfony\Component\HttpFoundation\RequestStack();
+        if (class_exists('Symfony\Component\HttpFoundation\RequestStack')) {
+            $requestStack = new RequestStack();
             $requestStack->push($request);
         }
 
@@ -46,6 +46,17 @@ class CoreControllerTest extends \PHPUnit_Framework_TestCase
         $container->expects($this->any())->method('get')->will($this->returnCallback(function ($id) use ($values) {
             return $values[$id];
         }));
+
+        $container->expects($this->any())
+            ->method('has')
+            ->will($this->returnCallback(function ($id) {
+                if ($id == 'templating') {
+                    return true;
+                }
+
+                return false;
+            }));
+
         $container->expects($this->any())->method('getParameter')->will($this->returnCallback(function ($name) {
             if ($name == 'sonata.admin.configuration.dashboard_blocks') {
                 return array();
@@ -81,8 +92,8 @@ class CoreControllerTest extends \PHPUnit_Framework_TestCase
         $request->headers->set('X-Requested-With', 'XMLHttpRequest');
 
         $requestStack = null;
-        if (Kernel::MINOR_VERSION > 3) {
-            $requestStack = new \Symfony\Component\HttpFoundation\RequestStack();
+        if (class_exists('Symfony\Component\HttpFoundation\RequestStack')) {
+            $requestStack = new RequestStack();
             $requestStack->push($request);
         }
 
@@ -96,6 +107,17 @@ class CoreControllerTest extends \PHPUnit_Framework_TestCase
         $container->expects($this->any())->method('get')->will($this->returnCallback(function ($id) use ($values) {
             return $values[$id];
         }));
+
+        $container->expects($this->any())
+            ->method('has')
+            ->will($this->returnCallback(function ($id) {
+                if ($id == 'templating') {
+                    return true;
+                }
+
+                return false;
+            }));
+
         $container->expects($this->any())->method('getParameter')->will($this->returnCallback(function ($name) {
             if ($name == 'sonata.admin.configuration.dashboard_blocks') {
                 return array();

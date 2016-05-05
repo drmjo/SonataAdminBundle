@@ -124,6 +124,7 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('label')->end()
                                     ->scalarNode('label_catalogue')->end()
                                     ->scalarNode('icon')->defaultValue('<i class="fa fa-folder"></i>')->end()
+                                    ->scalarNode('on_top')->defaultFalse()->info('Show menu item in side dashboard menu without treeview')->end()
                                     ->scalarNode('provider')->end()
                                     ->arrayNode('items')
                                         ->beforeNormalization()
@@ -142,10 +143,11 @@ class Configuration implements ConfigurationInterface
                                                         $items[$key]['admin'] = '';
                                                     } else {
                                                         $items[$key] = array(
-                                                            'admin'        => $item,
-                                                            'label'        => '',
-                                                            'route'        => '',
-                                                            'route_params' => array(),
+                                                            'admin'          => $item,
+                                                            'label'          => '',
+                                                            'route'          => '',
+                                                            'route_params'   => array(),
+                                                            'route_absolute' => true,
                                                         );
                                                     }
                                                 }
@@ -160,6 +162,10 @@ class Configuration implements ConfigurationInterface
                                                 ->scalarNode('route')->end()
                                                 ->arrayNode('route_params')
                                                     ->prototype('scalar')->end()
+                                                ->end()
+                                                ->booleanNode('route_absolute')
+                                                    ->info('Whether the generated url should be absolute')
+                                                    ->defaultTrue()
                                                 ->end()
                                             ->end()
                                         ->end()

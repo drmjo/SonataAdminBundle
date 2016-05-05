@@ -21,10 +21,6 @@ for older versions:
 
     Please provide a version constraint for the sonata-project/admin-bundle requirement: dev-master
 
-.. note::
-
-    If you are using Symfony 2.8 and upper, you need to require :code:`symfony/security-acl` to make it working.
-
 Selecting and downloading a storage bundle
 ------------------------------------------
 
@@ -138,13 +134,13 @@ Now, install the assets from the bundles:
 
 .. code-block:: bash
 
-    $ php app/console assets:install
+    $ php bin/console assets:install
 
 Usually, when installing new bundles, it is a good practice to also delete your cache:
 
 .. code-block:: bash
 
-    $ php app/console cache:clear
+    $ php bin/console cache:clear
 
 At this point, your Symfony installation should be fully functional, with no errors
 showing up from SonataAdminBundle or its dependencies. SonataAdminBundle is installed
